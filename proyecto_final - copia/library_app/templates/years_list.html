@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Libros por Año{% endblock %}
+
+{% block content %}
+<h1>📅 Libros Publicados por Año</h1>
+
+<div style="background: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+  <p>Selecciona un año para ver todos los libros publicados en ese año:</p>
+</div>
+
+<div class="book-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+  {% for year_data in years %}
+  <div class="book-card" style="text-align: center; cursor: pointer;" 
+     onclick='window.location="{% url "books_by_year" year_data.publication_year %}";'>
+    <h3 style="font-size: 32px; color: #333; margin: 20px 0;">{{ year_data.publication_year }}</h3>
+    <p style="font-size: 18px; color: #666;"><strong>{{ year_data.total }}</strong> libros</p>
+    <a href="{% url 'books_by_year' year_data.publication_year %}" class="btn" style="width: 100%;">Ver Libros</a>
+  </div>
+  {% empty %}
+  <p>No hay años registrados en la biblioteca.</p>
+  {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{% url 'home' %}" class="btn">← Volver al Inicio</a>
+</div>
+{% endblock %}

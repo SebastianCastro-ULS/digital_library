@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Devolver Libro{% endblock %}
+
+{% block content %}
+<div class="search-box">
+    <h1>✅ Devolver Libro</h1>
+    
+    <div class="book-card" style="max-width: 600px; margin: 20px 0;">
+        <h3>{{ loan.book.title }}</h3>
+        <p><strong>Usuario:</strong> {{ loan.user.username }}</p>
+        <p><strong>Prestado:</strong> {{ loan.borrowed_date|date:"d/m/Y H:i" }}</p>
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <p>
+            <label for="rating"><strong>¿Cómo calificarías este libro? (Opcional)</strong></label><br>
+            <select id="rating" name="rating" style="padding: 10px; margin-top: 10px;">
+                <option value="">No calificar</option>
+                <option value="5.0">⭐⭐⭐⭐⭐ (5.0)</option>
+                <option value="4.5">⭐⭐⭐⭐ (4.5)</option>
+                <option value="4.0">⭐⭐⭐⭐ (4.0)</option>
+                <option value="3.5">⭐⭐⭐ (3.5)</option>
+                <option value="3.0">⭐⭐⭐ (3.0)</option>
+                <option value="2.5">⭐⭐ (2.5)</option>
+                <option value="2.0">⭐⭐ (2.0)</option>
+                <option value="1.0">⭐ (1.0)</option>
+            </select>
+        </p>
+        <button type="submit" class="btn btn-success">Confirmar Devolución</button>
+        <a href="{% url 'user_dashboard' loan.user.username %}" class="btn btn-danger">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

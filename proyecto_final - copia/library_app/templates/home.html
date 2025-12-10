@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Búsqueda de Libros{% endblock %}
+
+{% block content %}
+<div class="search-box">
+    <h1>🔍 Buscar Libros</h1>
+    <form method="GET" action="{% url 'home' %}">
+        <!-- Búsqueda principal -->
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="text" name="q" placeholder="Buscar por título, autor o editorial..." value="{{ query }}" style="flex: 1;">
+            <button type="submit" style="min-width: 120px;">Buscar</button>
+        </div>
+        
+        <!-- Filtros avanzados (colapsables) -->
+        <details {% if filters_active %}open{% endif %} style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #007bff; font-weight: bold; padding: 10px 0;">
+                🔧 Filtros Avanzados
+            </summary>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                <!-- Filtro por editorial -->
+                <div>
+                    <label for="publisher" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">🏢 Editorial:</label>
+                    <select name="publisher" id="publisher" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="">Todas las editoriales</option>
+                        {% for pub in publishers %}
+                        <option value="{{ pub.publisher }}" {% if pub.publisher == selected_publisher %}selected{% endif %}>
+                            {{ pub.publisher }} ({{ pub.count }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Filtro por calificación mínima -->
+                <div>
+                    <label for="min_rating" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">⭐ Calificación mínima:</label>
+                    <select name="min_rating" id="min_rating" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="">Cualquiera</option>
+                        <option value="4.5" {% if min_rating == '4.5' %}selected{% endif %}>⭐⭐⭐⭐⭐ 4.5+</option>
+                        <option value="4.0" {% if min_rating == '4.0' %}selected{% endif %}>⭐⭐⭐⭐ 4.0+</option>
+                        <option value="3.5" {% if min_rating == '3.5' %}selected{% endif %}>⭐⭐⭐ 3.5+</option>
+                        <option value="3.0" {% if min_rating == '3.0' %}selected{% endif %}>⭐⭐⭐ 3.0+</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro por disponibilidad -->
+                <div>
+                    <label for="availability" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">📚 Disponibilidad:</label>
+                    <select name="availability" id="availability" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="">Todos</option>
+                        <option value="available" {% if availability == 'available' %}selected{% endif %}>✅ Solo disponibles</option>
+                        <option value="borrowed" {% if availability == 'borrowed' %}selected{% endif %}>❌ Solo prestados</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro por rango de páginas -->
+                <div>
+                    <label for="pages" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">📄 Páginas:</label>
+                    <select name="pages" id="pages" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="">Cualquiera</option>
+                        <option value="short" {% if pages == 'short' %}selected{% endif %}>Corto (< 200)</option>
+                        <option value="medium" {% if pages == 'medium' %}selected{% endif %}>Medio (200-400)</option>
+                        <option value="long" {% if pages == 'long' %}selected{% endif %}>Largo (> 400)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button type="submit" class="btn">Aplicar Filtros</button>
+                <a href="{% url 'home' %}" class="btn" style="background: #6c757d;">Limpiar Filtros</a>
+            </div>
+        </details>
+    </form>
+</div>
+
+<!-- Breadcrumb y resultados -->
+<div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+    <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+        <a href="{% url 'home' %}" style="color: #007bff; text-decoration: none;">🏠 Inicio</a>
+        {% if query %} > 🔍 Búsqueda: "{{ query }}"{% endif %}
+        {% if selected_publisher %} > 🏢 {{ selected_publisher }}{% endif %}
+    </div>
+    
+    {% if query or filters_active %}
+        <h2 style="margin: 10px 0;">
+            {% if query %}
+                Resultados para: "{{ query }}"
+            {% else %}
+                Resultados Filtrados
+            {% endif %}
+        </h2>
+        <p style="color: #666; font-size: 14px;">
+            Encontrados: <strong>{{ books.count }}</strong> libro(s)
+            {% if filters_active %} | <span style="color: #28a745;">✓ Filtros activos</span>{% endif %}
+        </p>
+    {% else %}
+        <h2 style="margin: 10px 0;">📚 Libros Destacados</h2>
+        <p style="color: #666; font-size: 14px;">Mostrando los libros mejor valorados de nuestra colección</p>
+    {% endif %}
+</div>
+
+<!-- Grid de libros -->
+<div class="book-grid">
+    {% for book in books %}
+    <div class="book-card" style="transition: transform 0.2s;">
+        <!-- Badge de disponibilidad -->
+        <div style="position: absolute; top: 10px; right: 10px;">
+            {% if book.is_available %}
+                <span style="background: #28a745; color: white; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">
+                    ✓ DISPONIBLE
+                </span>
+            {% else %}
+                <span style="background: #dc3545; color: white; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">
+                    PRESTADO
+                </span>
+            {% endif %}
+        </div>
+        
+        <h3 style="margin-top: 5px;">{{ book.title }}</h3>
+        <p><strong>Autor:</strong> {{ book.authors }}</p>
+        <p><strong>Editorial:</strong> {{ book.publisher|default:"N/A" }}</p>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+            <div>
+                <p style="margin: 0; font-weight: bold;">⭐ {{ book.average_rating|default:"N/A" }}/5.0</p>
+                <p style="margin: 0; font-size: 12px; color: #666;">{{ book.ratings_count }} reviews</p>
+            </div>
+            {% if book.num_pages %}
+            <div style="text-align: right;">
+                <p style="margin: 0; font-weight: bold;">📄 {{ book.num_pages }}</p>
+                <p style="margin: 0; font-size: 12px; color: #666;">páginas</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if book.publication_year %}
+        <p style="font-size: 13px; color: #666;">📅 Publicado: {{ book.publication_year }}</p>
+        {% endif %}
+        
+        <div style="margin-top: 15px;">
+            {% if book.is_available %}
+                <a href="{% url 'borrow_book' book.book_id %}" class="btn" style="width: 100%;">Prestar Libro</a>
+            {% else %}
+                <a href="{% url 'return_book' book.book_id %}" class="btn btn-success" style="width: 100%;">Devolver Libro</a>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; background: white; border-radius: 8px;">
+        <p style="font-size: 48px; margin-bottom: 15px;">🔍</p>
+        <h3 style="color: #333; margin-bottom: 10px;">No se encontraron libros</h3>
+        <p style="color: #666; margin-bottom: 20px;">
+            {% if query or filters_active %}
+                Intenta ajustar tu búsqueda o filtros
+            {% else %}
+                No hay libros disponibles en este momento
+            {% endif %}
+        </p>
+        {% if query or filters_active %}
+        <a href="{% url 'home' %}" class="btn">Ver Todos los Libros</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .book-card {
+        position: relative;
+    }
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    details summary {
+        user-select: none;
+    }
+    
+    details summary:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .book-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% endblock %}

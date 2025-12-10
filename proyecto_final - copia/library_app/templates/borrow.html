@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Prestar Libro{% endblock %}
+
+{% block content %}
+<div class="search-box">
+    <h1>📖 Prestar Libro</h1>
+    
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    
+    <div class="book-card" style="max-width: 600px; margin: 20px 0;">
+        <h3>{{ book.title }}</h3>
+        <p><strong>Autor:</strong> {{ book.authors }}</p>
+        <p><strong>Rating:</strong> ⭐ {{ book.average_rating }}/5.0</p>
+    </div>
+    
+    {% if book.is_available %}
+        <form method="POST">
+            {% csrf_token %}
+            <p>
+                <label for="username"><strong>Nombre de usuario:</strong></label><br>
+                <input type="text" id="username" name="username" required 
+                    style="padding: 10px; width: 300px; margin-top: 10px;"
+                    placeholder="Ejemplo: sebas1910">
+            </p>
+            <p style="color: #666; font-size: 14px;">Si el usuario no existe, se creará automáticamente</p>
+            <button type="submit" class="btn btn-success">Confirmar Préstamo</button>
+            <a href="{% url 'home' %}" class="btn btn-danger">Cancelar</a>
+        </form>
+    {% else %}
+        <p class="borrowed">Este libro ya está prestado.</p>
+        <a href="{% url 'home' %}" class="btn">Volver</a>
+    {% endif %}
+</div>
+{% endblock %}

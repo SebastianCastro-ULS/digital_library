@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Libros Prestados{% endblock %}
+
+{% block content %}
+
+<h1>Libros Actualmente Prestados</h1>
+
+<div class="book-grid">
+    {% for loan in loans %}
+    <div class="book-card">
+        <h3>{{ loan.book.title }}</h3>
+        <p><strong>Autor:</strong> {{ loan.book.authors }}</p>
+        <p class="borrowed">Prestado a: {{ loan.user.full_name }}</p>
+        <p><strong>Fecha de préstamo:</strong> {{ loan.borrowed_date|date:"d/m/Y H:i" }}</p>
+        <p><strong>Fecha de devolución esperada:</strong> {{ loan.due_date|date:"d/m/Y" }}</p>
+        
+        <a href="{% url 'return_book' loan.book.book_id %}" class="btn btn-success">Devolver Libro</a>
+    </div>
+    {% empty %}
+    <p>No hay libros prestados actualmente.</p>
+    {% endfor %}
+</div>
+{% endblock %}

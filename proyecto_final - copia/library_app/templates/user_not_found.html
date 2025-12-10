@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuario no encontrado{% endblock %}
+
+{% block content %}
+<div style="padding:40px; text-align:center;">
+  <h1>Usuario "{{ username }}" no encontrado</h1>
+  <p>No existe un usuario con ese nombre en la base de datos.</p>
+  <p>Si quieres ver el panel de un usuario, asegúrate de escribir el nombre exacto o crea un préstamo usando ese nombre (al pedir un préstamo se crea el usuario automáticamente).</p>
+  <p style="margin-top:20px;"><a href="{% url 'home' %}" class="btn">Volver al inicio</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Libros de {{ year }}{% endblock %}
+
+{% block content %}
+<h1>📅 Libros publicados en {{ year }}</h1>
+
+<div style="background: white; padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center;">
+    <p><strong>Total de libros:</strong> {{ count }}</p>
+    <a href="{% url 'books_by_year' year|add:'-1' %}" class="btn" style="margin-right: 10px;">← {{ year|add:'-1' }}</a>
+    <a href="{% url 'home' %}" class="btn" style="margin: 0 10px;">Inicio</a>
+    <a href="{% url 'books_by_year' year|add:'1' %}" class="btn">{{ year|add:'1' }} →</a>
+</div>
+
+<div class="book-grid">
+    {% for book in books %}
+    <div class="book-card">
+        <h3>{{ book.title }}</h3>
+        <p><strong>Autor:</strong> {{ book.authors }}</p>
+        <p><strong>Rating:</strong> ⭐ {{ book.average_rating }}/5.0</p>
+        
+        {% if book.is_available %}
+            <p class="available">✅ Disponible</p>
+            <a href="{% url 'borrow_book' book.book_id %}" class="btn">Prestar</a>
+        {% else %}
+            <p class="borrowed">❌ No disponible</p>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p>No hay libros de este año disponibles.</p>
+    {% endfor %}
+</div>
+{% endblock %}
